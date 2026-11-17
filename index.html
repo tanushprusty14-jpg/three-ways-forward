@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three Ways Forward</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one long horizontal track. Intro, then one chapter per path with its rail at mid height,
+   milestone cards alternating above and below, and a shared years ruler along the bottom. */
+:root{
+  --ink:#17202b;
+  --ink-2:#4a5565;
+  --paper:#f7f0ee;
+  --blue:#3a4de0;
+  --teal:#067a6d;
+  --rose:#c4304b;
+  --display:'Instrument Serif',Georgia,'Times New Roman',serif;
+  --body:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --yw:150px;
+  --sx:0;
+  --phc:var(--ink);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);color-scheme:light;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;touch-action:manipulation}
+.bar{pointer-events:none}
+.bar>*{pointer-events:auto}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* atmosphere */
+.scene{position:fixed;inset:0;opacity:0;transition:opacity .9s ease}
+.scene.on{opacity:1}
+.s0{background:linear-gradient(120deg,#fde6dc 0%,#f3e3f4 55%,#e2e6fb 100%)}
+.s1{background:linear-gradient(120deg,#e1e8ff,#f3f5ff 60%,#e9eefc)}
+.s2{background:linear-gradient(120deg,#d6f1ec,#eefaf6 60%,#e3f4ef)}
+.s3{background:linear-gradient(120deg,#fbdfe4,#fff1ee 60%,#fde7e8)}
+.s4{background:linear-gradient(120deg,#e9e6f6,#f3eef7 60%,#e6ecf8)}
+.blob{position:fixed;border-radius:50%;opacity:.4;pointer-events:none;will-change:transform}
+.b1{width:760px;height:760px;left:-4%;top:-6%;background:radial-gradient(circle,#3a4de0 0%,rgba(58,77,224,0) 66%)}
+.b2{width:720px;height:720px;left:46%;top:40%;background:radial-gradient(circle,#19b3a0 0%,rgba(25,179,160,0) 66%)}
+.b3{width:660px;height:660px;left:72%;top:-10%;background:radial-gradient(circle,#f0627a 0%,rgba(240,98,122,0) 66%)}
+
+/* chrome */
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:30;background:rgba(23,32,43,.06)}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--teal),var(--rose))}
+.bar{position:fixed;top:3px;left:0;right:0;height:61px;display:flex;align-items:center;gap:20px;padding:0 20px;z-index:20}
+.mark{font:400 26px/1 var(--display);letter-spacing:-.01em;white-space:nowrap}
+.mark em{font-style:italic}
+nav{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:none;font:500 12.5px var(--body);padding:8px 14px;border-radius:99px;border:1px solid rgba(23,32,43,.16);background:rgba(255,255,255,.55);color:var(--ink);cursor:pointer;white-space:nowrap;transition:background .25s,color .25s,border-color .25s}
+nav button:hover{background:rgba(255,255,255,.9)}
+nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(--c,var(--ink));color:#fff}
+.ctrl{display:flex;gap:6px}
+.ctrl button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(23,32,43,.16);background:rgba(255,255,255,.7);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:background .2s,transform .2s}
+.ctrl button:hover{background:#fff;transform:translateY(-1px)}
+.ctrl #play{background:var(--ink);color:#fff;border-color:var(--ink);width:auto;padding:0 16px;border-radius:99px;gap:8px;display:flex;align-items:center;font:500 12.5px var(--body)}
+
+.ph{position:fixed;left:40vw;bottom:8px;z-index:15;transform:translateX(-50%);pointer-events:none}
+.ph span{display:block;min-width:104px;text-align:center;font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;font-variant-numeric:tabular-nums;background:var(--phc);color:#fff;padding:6px 14px;border-radius:99px;transition:background .4s}
+
+/* scroller */
+#scroller{position:fixed;inset:0;overflow:auto;scrollbar-width:none;cursor:grab;outline:none}
+#scroller::-webkit-scrollbar{display:none}
+#scroller.dragging{cursor:grabbing;user-select:none}
+#scroller:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
+.track{position:relative;display:flex;height:max(100%,640px);width:max-content}
+
+/* intro */
+.hero{position:relative;flex:none;width:max(100vw,880px);height:100%;display:flex;flex-direction:column;justify-content:center;padding:88px clamp(24px,6vw,96px) 72px}
+.hero h1{font:400 clamp(60px,10.5vw,152px)/.88 var(--display);letter-spacing:-.025em;margin:0 0 28px}
+.hero h1 em{font-style:italic;background:linear-gradient(90deg,var(--blue),var(--teal) 55%,var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.1em}
+.hero p{max-width:46ch;font-size:17px;line-height:1.55;color:var(--ink-2);margin:0 0 28px}
+.legend{display:flex;gap:10px;flex-wrap:wrap}
+.legend button{display:flex;align-items:center;gap:9px;padding:9px 16px 9px 12px;border-radius:99px;border:1px solid rgba(23,32,43,.14);background:rgba(255,255,255,.6);font:500 13px var(--body);color:var(--ink);cursor:pointer;transition:transform .2s,background .2s}
+.legend button:hover{background:#fff;transform:translateY(-2px)}
+.legend i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.cue{display:flex;align-items:center;gap:10px;margin-top:40px;font:500 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.cue svg{animation:nudge 1.6s ease-in-out infinite}
+.fork{position:absolute;right:clamp(24px,5vw,80px);top:50%;width:min(36vw,440px);transform:translateY(-46%)}
+.fork path{fill:none;stroke-width:6;stroke-linecap:round;stroke-dasharray:1;animation:dash 1.8s cubic-bezier(.3,.6,.2,1) both}
+.fork text{font:500 10.5px var(--mono);letter-spacing:.1em;fill:var(--ink)}
+@media (max-width:900px){.fork{display:none}}
+
+/* chapters */
+.chapter{--intro:clamp(340px,80vw,600px);--cy:calc(50% + 4px);position:relative;flex:none;height:100%;width:calc(var(--intro) + var(--yw) * 20 + 380px)}
+.origin{position:absolute;left:var(--intro);top:0;width:0;height:0}
+.head{position:absolute;left:clamp(24px,5vw,72px);width:calc(var(--intro) - clamp(24px,5vw,72px) - 40px);top:var(--cy);transform:translateY(-50%)}
+.num{font:500 12px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--c);margin-bottom:12px}
+.head h2{font:400 clamp(40px,5vw,60px)/.96 var(--display);letter-spacing:-.015em;margin:0 0 16px;text-wrap:balance}
+.head p{margin:0 0 22px;font-size:15.5px;line-height:1.55;color:var(--ink-2);max-width:40ch}
+.stats{margin:0;display:grid;gap:12px;padding-top:18px;border-top:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
+.stats dt{font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
+.stats dd{margin:0;font-size:14px;font-weight:500}
+.gl{position:absolute;top:84px;bottom:76px;left:calc(var(--intro) + var(--t) * var(--yw));border-left:1px dashed rgba(23,32,43,.09)}
+.ruler{position:absolute;left:var(--intro);width:calc(var(--yw) * 20);bottom:62px;border-top:1.5px solid rgba(23,32,43,.35)}
+.ruler-cap{position:absolute;right:calc(100% + 14px);top:-8px;font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
+.tk{position:absolute;top:0;left:calc(var(--t) * var(--yw));transform:translateX(-50%);padding-top:10px;font:400 11px var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tk::before{content:"";position:absolute;top:0;left:50%;height:6px;border-left:1.5px solid rgba(23,32,43,.35)}
+.tk.grad{color:var(--c);font-weight:500}
+
+.seg{position:absolute;z-index:1;left:calc(var(--intro) + var(--a) * var(--yw));width:calc((var(--b) - var(--a)) * var(--yw) - 4px);top:calc(var(--cy) - 18px);height:36px;border-radius:18px;background:var(--c);color:#fff;display:flex;align-items:center;padding:0 16px;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;animation:draw .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--a) * 45ms + .15s)}
+.seg.open{-webkit-mask-image:linear-gradient(90deg,#000 62%,transparent);mask-image:linear-gradient(90deg,#000 62%,transparent)}
+.seg.branch{top:calc(var(--cy) + 24px);height:24px;border-radius:12px;background:rgba(255,255,255,.4);border:1.5px dashed var(--c);color:var(--c);font-size:10px;padding:0 12px}
+
+.st{position:absolute;z-index:2;width:230px;left:calc(var(--intro) + var(--t) * var(--yw) - 115px);animation:rise .7s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--t) * 55ms + .4s)}
+.st.up{bottom:calc(100% - var(--cy) + 56px)}
+.st.down{top:calc(var(--cy) + 70px)}
+.card{position:relative;padding:14px 16px 15px;border-radius:14px;background:rgba(255,255,255,.84);border:1px solid color-mix(in srgb,var(--c) 30%,transparent);box-shadow:0 12px 30px -16px rgba(23,32,43,.3);transition:transform .25s,box-shadow .25s}
+.st:hover .card{transform:translateY(-3px);box-shadow:0 18px 36px -16px rgba(23,32,43,.38)}
+.when{margin:0 0 6px;font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+.card h3{font:400 22px/1.05 var(--display);margin:0 0 7px;text-wrap:balance}
+.card p{margin:0;font-size:13px;line-height:1.5;color:var(--ink-2)}
+.stem{position:absolute;left:50%;width:2px;margin-left:-1px;background:var(--c);opacity:.75}
+.stem::after{content:"";position:absolute;left:50%;width:10px;height:10px;transform:translateX(-50%);border-radius:50%;background:#fff;border:2px solid var(--c)}
+.up .stem{top:100%;height:38px}
+.up .stem::after{bottom:-5px}
+.down .stem{bottom:100%;height:52px}
+.down .stem::after{top:-5px}
+.down.inbr .stem{height:22px}
+
+/* compare */
+.compare{--cw:46px;position:relative;flex:none;width:max(100vw,1260px);height:100%;padding:88px clamp(24px,5vw,72px) 76px;display:flex;flex-direction:column;justify-content:center;gap:26px}
+.compare h2{font:400 clamp(44px,5.4vw,72px)/.95 var(--display);letter-spacing:-.02em;margin:0}
+.compare .sub{margin:0;max-width:56ch;font-size:16px;line-height:1.55;color:var(--ink-2)}
+.chart{position:relative;display:grid;gap:12px;padding-top:26px}
+.crow{display:grid;grid-template-columns:150px calc(var(--cw) * 20);gap:16px;align-items:center}
+.crow .nm{font-size:13px;font-weight:600}
+.ctrack{position:relative;height:30px}
+.cseg{position:absolute;top:0;height:30px;left:calc(var(--a) * var(--cw));width:calc((var(--b) - var(--a)) * var(--cw) - 3px);border-radius:15px;background:var(--c);color:#fff;display:flex;align-items:center;padding:0 12px;font:500 9.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.cseg.open{-webkit-mask-image:linear-gradient(90deg,#000 62%,transparent);mask-image:linear-gradient(90deg,#000 62%,transparent)}
+.axis{margin-top:2px}
+.axis .ctrack{height:18px;border-top:1.5px solid rgba(23,32,43,.35)}
+.axis span{position:absolute;top:4px;left:calc(var(--t) * var(--cw));transform:translateX(-50%);font:400 11px var(--mono);color:var(--ink-2)}
+.mk{position:absolute;top:8px;bottom:14px;left:calc(166px + var(--cw) * 12);border-left:1.5px dashed var(--ink);pointer-events:none}
+.mk b{position:absolute;top:-4px;left:8px;font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;max-width:980px}
+.note{padding-top:12px;border-top:3px solid var(--c)}
+.note strong{display:block;font:400 22px/1.1 var(--display);margin-bottom:6px}
+.note span{font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.fine{margin:0;font-size:12.5px;color:var(--ink-2);max-width:70ch;line-height:1.5}
+
+@keyframes draw{from{clip-path:inset(0 100% 0 0 round 18px)}to{clip-path:inset(0 0 0 0 round 18px)}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes dash{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(7px)}}
+@media (max-width:900px){.mark{display:none}.ctrl #play span{display:none}.ctrl #play{padding:0;width:38px;justify-content:center}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.blob{transform:none!important}}
+</style>
+</head>
+<body>
+<div class="scene s0 on"></div><div class="scene s1"></div><div class="scene s2"></div><div class="scene s3"></div><div class="scene s4"></div>
+<i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
+
+<div class="progress"><i id="prog"></i></div>
+<header class="bar">
+  <div class="mark">Three ways <em>forward</em></div>
+  <nav id="nav" aria-label="Jump to a path"></nav>
+  <div class="ctrl">
+    <button id="prev" type="button" aria-label="Previous section"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button id="play" type="button" aria-label="Play the journey"></button>
+    <button id="next" type="button" aria-label="Next section"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+</header>
+
+<main id="scroller" tabindex="0" aria-label="Career timeline. Scroll sideways to move through time.">
+  <div class="track" id="track">
+    <section class="hero" id="hero" aria-label="Introduction">
+      <h1>Three ways<br><em>forward.</em></h1>
+      <p>Healthcare consulting and product management, biomedical engineering, and medicine, laid out year by year from your first day of college. Scroll sideways, drag, or press play.</p>
+      <div class="legend" id="legend"></div>
+      <div class="cue">Scroll
+        <svg width="34" height="12" viewBox="0 0 34 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h31M27 1l5 5-5 5"/></svg>
+      </div>
+      <svg class="fork" viewBox="0 0 420 320" aria-hidden="true">
+        <path pathLength="1" d="M10 160 C120 160 160 60 410 60" stroke="#3a4de0" style="animation-delay:.3s"/>
+        <path pathLength="1" d="M10 160 C140 175 260 145 410 160" stroke="#067a6d" style="animation-delay:.5s"/>
+        <path pathLength="1" d="M10 160 C120 160 160 260 410 260" stroke="#c4304b" style="animation-delay:.7s"/>
+        <circle cx="10" cy="160" r="8" fill="#17202b"/>
+        <text x="410" y="42" text-anchor="end">CONSULTING / PM</text>
+        <text x="410" y="142" text-anchor="end">BIOMEDICAL ENG.</text>
+        <text x="410" y="288" text-anchor="end">MEDICINE</text>
+      </svg>
+    </section>
+  </div>
+</main>
+<div class="ph" id="ph" aria-hidden="true"><span id="phText">Start here</span></div>
+
+<script>
+(function () {
+  var YW = 150, YEARS = 20;
+  var root = document.documentElement;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  root.style.setProperty('--yw', YW + 'px');
+
+  var DATA = [
+    {
+      n: '01', short: 'Consulting & PM', name: 'Healthcare consulting & PM', color: '#3a4de0',
+      summary: 'Solve problems for hospitals, payers and life-science companies, or build the products they use. Quick to a first paycheck and flexible about where you go next.',
+      stats: [['Paid from', 'Year 4'], ['Starting degree', 'Any major: bio, policy, business'], ['Common detour', 'MBA, MHA or MPH']],
+      at12: 'Manager or senior PM, about eight years into a full salary.',
+      segs: [
+        { a: 0, b: 4, l: 'Undergrad', s: 'Undergrad' },
+        { a: 4, b: 6, l: 'Analyst / APM', s: 'Analyst' },
+        { a: 6, b: 10, l: 'Consultant / PM', s: 'Consultant' },
+        { a: 10, b: 14, l: 'Manager / Sr PM', s: 'Manager' },
+        { a: 14, b: 20, l: 'Principal · Director · Partner', s: 'Principal and up', open: true },
+        { a: 6, b: 8, l: 'MBA / MHA (optional)', branch: true }
+      ],
+      st: [
+        { t: 1.5, side: 'up', when: 'Year 2', h: 'Build the toolkit', p: 'Join a case or health-tech club. Learn Excel, slides, and how to break a messy problem into parts.' },
+        { t: 3, side: 'down', when: 'Year 3', h: 'Summer internship', p: 'Consulting or product intern at a health system, payer, or digital health company. Many convert to offers.' },
+        { t: 4, side: 'up', when: 'Year 4', h: 'First role', p: 'Analyst at a healthcare consultancy, or associate PM at a health-tech company. Often around $80–100k.' },
+        { t: 6, side: 'up', when: 'Year 6', h: 'Consultant or PM', p: 'Own a workstream or a feature end to end. Usually comes after about two years in the first role.' },
+        { t: 7, side: 'down', when: 'Years 6–8', h: 'Optional: MBA, MHA or MPH', p: 'Two years that can reset your level and open pharma, payer, and venture roles.' },
+        { t: 10, side: 'up', when: 'Year 10', h: 'Manager or senior PM', p: 'Lead teams and client relationships, or own a product line. Often $170–250k.' },
+        { t: 13, side: 'down', when: 'Year 13', h: 'Director or principal', p: 'Set strategy for health systems, payers or a product org, and bring in the work.' },
+        { t: 17, side: 'up', when: 'Year 17+', h: 'Partner, VP, or founder', p: 'Partner at a firm, VP of Product, or a startup of your own. Pay swings widely, often with equity.' }
+      ]
+    },
+    {
+      n: '02', short: 'Biomedical eng.', name: 'Biomedical engineering', color: '#067a6d',
+      summary: 'Design and test the devices, diagnostics and software clinicians rely on, from the lab bench through FDA clearance. Hands-on, with a clear graduate-school fork.',
+      stats: [['Paid from', 'Year 4'], ['Starting degree', 'BS in biomedical engineering'], ['Common detour', 'MS or PhD, years 4–9']],
+      at12: 'Senior engineer with about eight years in industry, or a new PhD a few years into research roles.',
+      segs: [
+        { a: 0, b: 4, l: 'BME degree', s: 'BS' },
+        { a: 4, b: 10, l: 'Associate → Engineer II', s: 'Engineer' },
+        { a: 10, b: 15, l: 'Senior / Lead engineer', s: 'Senior / Lead' },
+        { a: 15, b: 20, l: 'Principal · R&D manager', s: 'Principal and up', open: true },
+        { a: 4, b: 9, l: 'Grad school: MS or PhD (optional)', branch: true }
+      ],
+      st: [
+        { t: 1.5, side: 'up', when: 'Year 2', h: 'Get into a lab', p: 'Early research time becomes your resume and your best reference. Start with a professor whose work you like.' },
+        { t: 3, side: 'down', when: 'Years 3–4', h: 'Co-op and capstone', p: 'A summer or semester in R&D, quality or manufacturing, then a capstone built for a real clinical need.' },
+        { t: 4.6, side: 'up', when: 'Year 4', h: 'First job', p: 'Associate engineer in R&D, quality or regulatory at a device, diagnostics or biotech company. Around $70–90k.' },
+        { t: 5.6, side: 'down', when: 'Years 5–6', h: 'Master’s or PhD', p: 'An MS adds 1–2 years and a pay bump. A PhD takes 4–6 and usually comes with a stipend.' },
+        { t: 7.5, side: 'up', when: 'Years 7–8', h: 'Engineer II and FDA work', p: 'Own a design from concept through verification and FDA clearance, with a growing say in the product.' },
+        { t: 8.8, side: 'down', when: 'Years 8–9', h: 'PhD finish line', p: 'Research scientist, professor, or startup CTO. Industry R&D roles open at a higher level.' },
+        { t: 12, side: 'up', when: 'Years 10–15', h: 'Senior or lead engineer', p: 'Lead a project team, mentor, and write the test plans that get a device approved. About $120–160k.' },
+        { t: 15, side: 'down', when: 'Year 15', h: 'Principal or R&D manager', p: 'Set technical direction across product lines, or manage an engineering team.' },
+        { t: 18, side: 'up', when: 'Year 18+', h: 'Director or founder', p: 'Run an R&D organization, or start your own medical device company.' }
+      ]
+    },
+    {
+      n: '03', short: 'Doctor', name: 'Becoming a doctor', color: '#c4304b',
+      summary: 'Care for patients directly. The longest road of the three, with the most training before a full salary and the deepest clinical responsibility.',
+      stats: [['Paid from', 'Year 8, at resident pay'], ['Full salary from', 'Year 11, as an attending'], ['Starting degree', 'Any major plus pre-med courses']],
+      at12: 'One year into attending pay, after three years of resident salary.',
+      segs: [
+        { a: 0, b: 4, l: 'Pre-med undergrad', s: 'Pre-med' },
+        { a: 4, b: 8, l: 'Medical school', s: 'Med school' },
+        { a: 8, b: 11, l: 'Residency (3–7 yrs)', s: 'Residency' },
+        { a: 11, b: 20, l: 'Attending physician', s: 'Attending', open: true },
+        { a: 11, b: 13, l: 'Fellowship (optional)', branch: true }
+      ],
+      st: [
+        { t: 0.8, side: 'up', when: 'Year 1', h: 'Prereqs and GPA', p: 'Biology, general and organic chemistry, physics. Grades here anchor your application.' },
+        { t: 1.7, side: 'down', when: 'Years 2–3', h: 'Clinical hours and research', p: 'Shadow doctors, scribe or volunteer, and spend time in a lab. Programs want proof you have seen patient care.' },
+        { t: 2.7, side: 'up', when: 'Year 3', h: 'The MCAT', p: 'A full-day exam, usually taken in spring of junior year after a few months of study.' },
+        { t: 3.3, side: 'down', when: 'Years 3–4', h: 'Apply', p: 'Applications go in the summer after junior year. Interviews run through the following spring.' },
+        { t: 4.3, side: 'up', when: 'Year 5', h: 'Medical school begins', p: 'Two years of classroom science, then clinical rotations. Many students take a gap year first.' },
+        { t: 6, side: 'down', when: 'Year 7', h: 'Rotations and boards', p: 'Third year rotates through every specialty. Licensing exams run across the four years.' },
+        { t: 7.6, side: 'up', when: 'Year 8', h: 'Match Day', p: 'In March of your final year you learn where you will do residency. Graduates often carry roughly $200k in debt.' },
+        { t: 9.5, side: 'down', when: 'Years 9–11', h: 'Residency', p: 'Three to seven years depending on specialty. Long hours and a resident salary of about $65–80k.' },
+        { t: 11.3, side: 'up', when: 'Year 11', h: 'Board certified', p: 'You become an attending. Primary care pays roughly $250k, and many specialties $350k and up.' },
+        { t: 12.4, side: 'down', when: 'Years 11–13', h: 'Fellowship (optional)', p: 'One to three more years to subspecialize, in cardiology or oncology for example, at resident-level pay.' },
+        { t: 15, side: 'up', when: 'Year 15', h: 'Established attending', p: 'Partner in a group, teach residents, or take on a medical directorship.' },
+        { t: 18, side: 'down', when: 'Year 18+', h: 'Leadership or your own practice', p: 'Department chair, chief medical officer, or owner of a practice.' }
+      ]
+    }
+  ];
+
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var el = function (tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+  var track = $('#track'), scroller = $('#scroller');
+  var hero = $('#hero');
+  var scenes = [hero];
+  var navLabels = ['Start', 'Consulting & PM', 'Biomedical eng.', 'Doctor', 'Side by side'];
+
+  /* chapters */
+  DATA.forEach(function (d, i) {
+    var sec = el('section', 'chapter');
+    sec.id = 'ch-' + i;
+    sec.style.setProperty('--c', d.color);
+    sec.setAttribute('aria-label', d.name);
+    var h = '<div class="origin"></div>';
+    h += '<div class="head"><div class="num">Path ' + d.n + '</div><h2>' + d.name + '</h2><p>' + d.summary + '</p><dl class="stats">' +
+      d.stats.map(function (s) { return '<div><dt>' + s[0] + '</dt><dd>' + s[1] + '</dd></div>'; }).join('') + '</dl></div>';
+    for (var t = 0; t <= YEARS; t++) h += '<i class="gl" style="--t:' + t + '"></i>';
+    h += '<div class="ruler"><span class="ruler-cap">Years since day one</span>';
+    for (var k = 0; k <= YEARS; k++) h += '<span class="tk' + (k === 4 ? ' grad' : '') + '" style="--t:' + k + '">' + k + '</span>';
+    h += '</div>';
+    d.segs.forEach(function (s) {
+      h += '<div class="seg' + (s.branch ? ' branch' : '') + (s.open ? ' open' : '') + '" style="--a:' + s.a + ';--b:' + s.b + '" title="' + s.l + '">' + s.l + '</div>';
+    });
+    d.st.forEach(function (s) {
+      var inbr = d.segs.some(function (g) { return g.branch && s.t >= g.a && s.t <= g.b; });
+      h += '<article class="st ' + s.side + (inbr && s.side === 'down' ? ' inbr' : '') + '" style="--t:' + s.t + '">' +
+        '<div class="card"><p class="when">' + s.when + '</p><h3>' + s.h + '</h3><p>' + s.p + '</p></div><span class="stem"></span></article>';
+    });
+    sec.innerHTML = h;
+    track.appendChild(sec);
+    scenes.push(sec);
+  });
+
+  /* compare */
+  var cmp = el('section', 'compare');
+  cmp.setAttribute('aria-label', 'Side by side');
+  var rows = DATA.map(function (d) {
+    return '<div class="crow" style="--c:' + d.color + '"><div class="nm">' + d.short + '</div><div class="ctrack">' +
+      d.segs.filter(function (s) { return !s.branch; }).map(function (s) {
+        var fits = (s.b - s.a) * 46 >= s.s.length * 6.6 + 26;
+        return '<div class="cseg' + (s.open ? ' open' : '') + '" style="--a:' + s.a + ';--b:' + s.b + '" title="' + s.l + '">' + (fits ? s.s : '') + '</div>';
+      }).join('') + '</div></div>';
+  }).join('');
+  var axis = '<div class="crow axis"><div></div><div class="ctrack">' + [0, 4, 8, 12, 16, 20].map(function (t) { return '<span style="--t:' + t + '">' + t + '</span>'; }).join('') + '</div></div>';
+  var notes = DATA.map(function (d) {
+    return '<div class="note" style="--c:' + d.color + '"><strong>' + d.short + '</strong><span>At year 12: ' + d.at12 + '</span></div>';
+  }).join('');
+  cmp.innerHTML = '<h2>Side by side</h2>' +
+    '<p class="sub">Same starting line, same scale. The dashed line marks year 12, where the paths have spread furthest apart.</p>' +
+    '<div class="chart">' + rows + axis + '<div class="mk"><b>Year 12</b></div></div>' +
+    '<div class="notes">' + notes + '</div>' +
+    '<p class="fine">Pay figures are rough US ranges for orientation. They vary by city, employer and specialty. Optional detours like an MBA, a PhD or a fellowship are left out of this view.</p>';
+  track.appendChild(cmp);
+  scenes.push(cmp);
+
+  /* nav + legend */
+  var nav = $('#nav'), legend = $('#legend'), navBtns = [];
+  navLabels.forEach(function (label, i) {
+    var b = el('button', '', label);
+    b.type = 'button';
+    if (i >= 1 && i <= 3) b.style.setProperty('--c', DATA[i - 1].color);
+    b.addEventListener('click', function () { go(i); });
+    nav.appendChild(b);
+    navBtns.push(b);
+  });
+  DATA.forEach(function (d, i) {
+    var b = el('button', '', '<i></i>' + d.short);
+    b.type = 'button';
+    b.style.setProperty('--c', d.color);
+    b.addEventListener('click', function () { go(i + 1); });
+    legend.appendChild(b);
+  });
+
+  var bgs = Array.prototype.slice.call(document.querySelectorAll('.scene'));
+  var blobs = Array.prototype.slice.call(document.querySelectorAll('.blob'));
+  var BLOB_K = [0.05, 0.08, 0.03];
+  var prog = $('#prog'), ph = $('#ph'), phText = $('#phText');
+  var active = 0, ticking = false;
+
+  /* cached geometry, so scrolling never forces layout */
+  var offs = [], origins = [];
+  function measure() {
+    track.style.width = '';
+    var total = 0;
+    scenes.forEach(function (s, i) {
+      offs[i] = s.offsetLeft;
+      var o = s.querySelector('.origin');
+      origins[i] = o ? o.offsetLeft : 0;
+      total += s.offsetWidth;
+    });
+    track.style.width = total + 'px';
+  }
+  measure();
+
+  /* our own eased scroll, so the buttons do not depend on native smooth scrolling */
+  var anim = 0;
+  function maxScroll() { return Math.max(0, scroller.scrollWidth - scroller.clientWidth); }
+  function scrollToX(x) {
+    cancelAnimationFrame(anim);
+    x = Math.max(0, Math.min(maxScroll(), x));
+    var from = scroller.scrollLeft, dist = x - from;
+    if (reduce || Math.abs(dist) < 2) { scroller.scrollLeft = x; return; }
+    var dur = Math.min(1500, 550 + Math.abs(dist) * 0.16), t0 = null;
+    function step(now) {
+      if (t0 === null) t0 = now;
+      var p = Math.min(1, (now - t0) / dur);
+      var e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      scroller.scrollLeft = from + dist * e;
+      if (p < 1) anim = requestAnimationFrame(step);
+    }
+    anim = requestAnimationFrame(step);
+  }
+  function go(i) {
+    i = Math.max(0, Math.min(scenes.length - 1, i));
+    scrollToX(offs[i]);
+  }
+
+  function update() {
+    ticking = false;
+    var sl = scroller.scrollLeft, vw = scroller.clientWidth;
+    var max = scroller.scrollWidth - vw;
+    prog.style.width = (max > 0 ? sl / max * 100 : 0) + '%';
+    var px = sl + vw * 0.4;
+    var idx = 0;
+    for (var q = 0; q < offs.length; q++) { if (px >= offs[q]) idx = q; }
+    if (idx !== active) {
+      active = idx;
+      bgs.forEach(function (b, i) { b.classList.toggle('on', i === idx); });
+      navBtns.forEach(function (b, i) { b.setAttribute('aria-current', i === idx ? 'true' : 'false'); });
+    }
+    var label = 'Start here', col = 'var(--ink)';
+    if (idx >= 1 && idx <= 3) {
+      var d = DATA[idx - 1];
+      var t = (px - offs[idx] - origins[idx]) / YW;
+      col = d.color;
+      label = t < 0 ? 'Path ' + d.n : (t > YEARS ? 'Year 20+' : 'Year ' + t.toFixed(1));
+    } else if (idx === 4) {
+      label = 'Side by side';
+    }
+    phText.textContent = label;
+    ph.style.setProperty('--phc', col);
+    if (!reduce) blobs.forEach(function (b, i) { b.style.transform = 'translate3d(' + (-sl * BLOB_K[i]).toFixed(1) + 'px,0,0)'; });
+  }
+  function queue() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  scroller.addEventListener('scroll', queue, { passive: true });
+  window.addEventListener('resize', function () { measure(); queue(); });
+
+  /* play / pause */
+  var playBtn = $('#play'), playing = false, last = 0, acc = 0;
+  var ICON_PLAY = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg><span>Play</span>';
+  var ICON_PAUSE = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="5" height="16" rx="1.2"/><rect x="14" y="4" width="5" height="16" rx="1.2"/></svg><span>Pause</span>';
+  playBtn.innerHTML = ICON_PLAY;
+  function stop() {
+    if (!playing) return;
+    playing = false;
+    playBtn.innerHTML = ICON_PLAY;
+    playBtn.setAttribute('aria-label', 'Play the journey');
+  }
+  function halt() { stop(); cancelAnimationFrame(anim); }
+  function loop(now) {
+    if (!playing) return;
+    var dt = Math.max(0, Math.min(64, now - last)); last = now;
+    acc += dt * 0.09;
+    var whole = Math.floor(acc);
+    if (whole > 0) {
+      acc -= whole;
+      scroller.scrollLeft = scroller.scrollLeft + whole;
+      if (scroller.scrollLeft >= maxScroll() - 1) { stop(); return; }
+    }
+    requestAnimationFrame(loop);
+  }
+  playBtn.addEventListener('click', function () {
+    if (playing) { stop(); return; }
+    cancelAnimationFrame(anim);
+    if (maxScroll() - scroller.scrollLeft < 4) scroller.scrollLeft = 0;
+    playing = true;
+    acc = 0;
+    last = performance.now();
+    playBtn.innerHTML = ICON_PAUSE;
+    playBtn.setAttribute('aria-label', 'Pause the journey');
+    requestAnimationFrame(loop);
+  });
+
+  $('#next').addEventListener('click', function () { halt(); go(active + 1); });
+  $('#prev').addEventListener('click', function () {
+    halt();
+    var deep = scroller.scrollLeft > offs[active] + 60;
+    go(deep ? active : active - 1);
+  });
+
+  /* wheel: turn vertical scrolling into smooth sideways motion */
+  var target = null, wraf = 0;
+  function wstep() {
+    var cur = scroller.scrollLeft, diff = target - cur;
+    if (Math.abs(diff) < 0.6) { scroller.scrollLeft = target; target = null; wraf = 0; return; }
+    scroller.scrollLeft = cur + diff * 0.14;
+    wraf = requestAnimationFrame(wstep);
+  }
+  scroller.addEventListener('wheel', function (e) {
+    halt();
+    if (scroller.scrollHeight > scroller.clientHeight + 2) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      var max = scroller.scrollWidth - scroller.clientWidth;
+      if (target === null) target = scroller.scrollLeft;
+      target = Math.max(0, Math.min(max, target + e.deltaY * (e.deltaMode === 1 ? 32 : 1)));
+      if (!wraf) wraf = requestAnimationFrame(wstep);
+    } else { target = null; }
+  }, { passive: false });
+
+  /* drag with a mouse */
+  var drag = null;
+  scroller.addEventListener('pointerdown', function (e) {
+    halt(); target = null;
+    if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('button')) return;
+    drag = { x: e.clientX, s: scroller.scrollLeft, moved: false };
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) > 4) { drag.moved = true; scroller.classList.add('dragging'); }
+    if (drag.moved) scroller.scrollLeft = drag.s - dx;
+  });
+  function endDrag() { drag = null; scroller.classList.remove('dragging'); }
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+  scroller.addEventListener('keydown', halt);
+  scroller.addEventListener('touchstart', function () { halt(); target = null; }, { passive: true });
+
+  navBtns[0].setAttribute('aria-current', 'true');
+  update();
+})();
+</script>
+</body>
+</html>
