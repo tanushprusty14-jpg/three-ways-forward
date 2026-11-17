@@ -11,12 +11,14 @@
 /* Layout idea: one long horizontal track. Intro, then one chapter per path with its rail at mid height,
    milestone cards alternating above and below, and a shared years ruler along the bottom. */
 :root{
-  --ink:#17202b;
-  --ink-2:#4a5565;
-  --paper:#f7f0ee;
-  --blue:#3a4de0;
-  --teal:#067a6d;
-  --rose:#c4304b;
+  --ink:#eef0f6;
+  --ink-2:#a3adc2;
+  --paper:#0b0f1a;
+  --on-c:#0b0f1a;
+  --line:rgba(255,255,255,.12);
+  --blue:#7c8cff;
+  --teal:#2fd4be;
+  --rose:#ff6f8a;
   --display:'Instrument Serif',Georgia,'Times New Roman',serif;
   --body:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
@@ -26,7 +28,7 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;overflow:hidden}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);color-scheme:light;-webkit-font-smoothing:antialiased}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);color-scheme:dark;-webkit-font-smoothing:antialiased}
 button{font-family:inherit;touch-action:manipulation}
 .bar{pointer-events:none}
 .bar>*{pointer-events:auto}
@@ -35,34 +37,34 @@ button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 /* atmosphere */
 .scene{position:fixed;inset:0;opacity:0;transition:opacity .9s ease}
 .scene.on{opacity:1}
-.s0{background:linear-gradient(120deg,#fde6dc 0%,#f3e3f4 55%,#e2e6fb 100%)}
-.s1{background:linear-gradient(120deg,#e1e8ff,#f3f5ff 60%,#e9eefc)}
-.s2{background:linear-gradient(120deg,#d6f1ec,#eefaf6 60%,#e3f4ef)}
-.s3{background:linear-gradient(120deg,#fbdfe4,#fff1ee 60%,#fde7e8)}
-.s4{background:linear-gradient(120deg,#e9e6f6,#f3eef7 60%,#e6ecf8)}
-.blob{position:fixed;border-radius:50%;opacity:.4;pointer-events:none;will-change:transform}
+.s0{background:linear-gradient(120deg,#1d1233 0%,#10122a 55%,#0b1526 100%)}
+.s1{background:linear-gradient(120deg,#0f1634,#0b1022 60%,#0c1226)}
+.s2{background:linear-gradient(120deg,#08201f,#0a1719 60%,#09191b)}
+.s3{background:linear-gradient(120deg,#2a1020,#170c14 60%,#1c0e17)}
+.s4{background:linear-gradient(120deg,#1a1630,#0e1020 60%,#10162a)}
+.blob{position:fixed;border-radius:50%;opacity:.3;pointer-events:none;will-change:transform}
 .b1{width:760px;height:760px;left:-4%;top:-6%;background:radial-gradient(circle,#3a4de0 0%,rgba(58,77,224,0) 66%)}
 .b2{width:720px;height:720px;left:46%;top:40%;background:radial-gradient(circle,#19b3a0 0%,rgba(25,179,160,0) 66%)}
 .b3{width:660px;height:660px;left:72%;top:-10%;background:radial-gradient(circle,#f0627a 0%,rgba(240,98,122,0) 66%)}
 
 /* chrome */
-.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:30;background:rgba(23,32,43,.06)}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:30;background:rgba(255,255,255,.08)}
 .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--teal),var(--rose))}
 .bar{position:fixed;top:3px;left:0;right:0;height:61px;display:flex;align-items:center;gap:20px;padding:0 20px;z-index:20}
 .mark{font:400 26px/1 var(--display);letter-spacing:-.01em;white-space:nowrap}
 .mark em{font-style:italic}
 nav{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
 nav::-webkit-scrollbar{display:none}
-nav button{flex:none;font:500 12.5px var(--body);padding:8px 14px;border-radius:99px;border:1px solid rgba(23,32,43,.16);background:rgba(255,255,255,.55);color:var(--ink);cursor:pointer;white-space:nowrap;transition:background .25s,color .25s,border-color .25s}
-nav button:hover{background:rgba(255,255,255,.9)}
-nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(--c,var(--ink));color:#fff}
+nav button{flex:none;font:500 12.5px var(--body);padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);cursor:pointer;white-space:nowrap;transition:background .25s,color .25s,border-color .25s}
+nav button:hover{background:rgba(255,255,255,.13)}
+nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(--c,var(--ink));color:var(--on-c)}
 .ctrl{display:flex;gap:6px}
-.ctrl button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(23,32,43,.16);background:rgba(255,255,255,.7);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:background .2s,transform .2s}
-.ctrl button:hover{background:#fff;transform:translateY(-1px)}
-.ctrl #play{background:var(--ink);color:#fff;border-color:var(--ink);width:auto;padding:0 16px;border-radius:99px;gap:8px;display:flex;align-items:center;font:500 12.5px var(--body)}
+.ctrl button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:background .2s,transform .2s}
+.ctrl button:hover{background:rgba(255,255,255,.16);transform:translateY(-1px)}
+.ctrl #play{background:var(--ink);color:var(--paper);border-color:var(--ink);width:auto;padding:0 16px;border-radius:99px;gap:8px;display:flex;align-items:center;font:500 12.5px var(--body)}
 
 .ph{position:fixed;left:40vw;bottom:8px;z-index:15;transform:translateX(-50%);pointer-events:none}
-.ph span{display:block;min-width:104px;text-align:center;font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;font-variant-numeric:tabular-nums;background:var(--phc);color:#fff;padding:6px 14px;border-radius:99px;transition:background .4s}
+.ph span{display:block;min-width:104px;text-align:center;font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;font-variant-numeric:tabular-nums;background:var(--phc);color:var(--on-c);padding:6px 14px;border-radius:99px;transition:background .4s}
 
 /* scroller */
 #scroller{position:fixed;inset:0;overflow:auto;scrollbar-width:none;cursor:grab;outline:none}
@@ -77,8 +79,8 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
 .hero h1 em{font-style:italic;background:linear-gradient(90deg,var(--blue),var(--teal) 55%,var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.1em}
 .hero p{max-width:46ch;font-size:17px;line-height:1.55;color:var(--ink-2);margin:0 0 28px}
 .legend{display:flex;gap:10px;flex-wrap:wrap}
-.legend button{display:flex;align-items:center;gap:9px;padding:9px 16px 9px 12px;border-radius:99px;border:1px solid rgba(23,32,43,.14);background:rgba(255,255,255,.6);font:500 13px var(--body);color:var(--ink);cursor:pointer;transition:transform .2s,background .2s}
-.legend button:hover{background:#fff;transform:translateY(-2px)}
+.legend button{display:flex;align-items:center;gap:9px;padding:9px 16px 9px 12px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.06);font:500 13px var(--body);color:var(--ink);cursor:pointer;transition:transform .2s,background .2s}
+.legend button:hover{background:rgba(255,255,255,.13);transform:translateY(-2px)}
 .legend i{width:10px;height:10px;border-radius:50%;background:var(--c)}
 .cue{display:flex;align-items:center;gap:10px;margin-top:40px;font:500 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
 .cue svg{animation:nudge 1.6s ease-in-out infinite}
@@ -97,27 +99,27 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
 .stats{margin:0;display:grid;gap:12px;padding-top:18px;border-top:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
 .stats dt{font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
 .stats dd{margin:0;font-size:14px;font-weight:500}
-.gl{position:absolute;top:84px;bottom:76px;left:calc(var(--intro) + var(--t) * var(--yw));border-left:1px dashed rgba(23,32,43,.09)}
-.ruler{position:absolute;left:var(--intro);width:calc(var(--yw) * 20);bottom:62px;border-top:1.5px solid rgba(23,32,43,.35)}
+.gl{position:absolute;top:84px;bottom:76px;left:calc(var(--intro) + var(--t) * var(--yw));border-left:1px dashed rgba(255,255,255,.07)}
+.ruler{position:absolute;left:var(--intro);width:calc(var(--yw) * 20);bottom:62px;border-top:1.5px solid rgba(255,255,255,.3)}
 .ruler-cap{position:absolute;right:calc(100% + 14px);top:-8px;font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
 .tk{position:absolute;top:0;left:calc(var(--t) * var(--yw));transform:translateX(-50%);padding-top:10px;font:400 11px var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
-.tk::before{content:"";position:absolute;top:0;left:50%;height:6px;border-left:1.5px solid rgba(23,32,43,.35)}
+.tk::before{content:"";position:absolute;top:0;left:50%;height:6px;border-left:1.5px solid rgba(255,255,255,.3)}
 .tk.grad{color:var(--c);font-weight:500}
 
-.seg{position:absolute;z-index:1;left:calc(var(--intro) + var(--a) * var(--yw));width:calc((var(--b) - var(--a)) * var(--yw) - 4px);top:calc(var(--cy) - 18px);height:36px;border-radius:18px;background:var(--c);color:#fff;display:flex;align-items:center;padding:0 16px;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;animation:draw .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--a) * 45ms + .15s)}
+.seg{position:absolute;z-index:1;left:calc(var(--intro) + var(--a) * var(--yw));width:calc((var(--b) - var(--a)) * var(--yw) - 4px);top:calc(var(--cy) - 18px);height:36px;border-radius:18px;background:var(--c);color:var(--on-c);display:flex;align-items:center;padding:0 16px;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;animation:draw .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--a) * 45ms + .15s)}
 .seg.open{-webkit-mask-image:linear-gradient(90deg,#000 62%,transparent);mask-image:linear-gradient(90deg,#000 62%,transparent)}
-.seg.branch{top:calc(var(--cy) + 24px);height:24px;border-radius:12px;background:rgba(255,255,255,.4);border:1.5px dashed var(--c);color:var(--c);font-size:10px;padding:0 12px}
+.seg.branch{top:calc(var(--cy) + 24px);height:24px;border-radius:12px;background:rgba(255,255,255,.04);border:1.5px dashed var(--c);color:var(--c);font-size:10px;padding:0 12px}
 
 .st{position:absolute;z-index:2;width:230px;left:calc(var(--intro) + var(--t) * var(--yw) - 115px);animation:rise .7s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--t) * 55ms + .4s)}
 .st.up{bottom:calc(100% - var(--cy) + 56px)}
 .st.down{top:calc(var(--cy) + 70px)}
-.card{position:relative;padding:14px 16px 15px;border-radius:14px;background:rgba(255,255,255,.84);border:1px solid color-mix(in srgb,var(--c) 30%,transparent);box-shadow:0 12px 30px -16px rgba(23,32,43,.3);transition:transform .25s,box-shadow .25s}
-.st:hover .card{transform:translateY(-3px);box-shadow:0 18px 36px -16px rgba(23,32,43,.38)}
+.card{position:relative;padding:14px 16px 15px;border-radius:14px;background:rgba(18,24,40,.84);border:1px solid color-mix(in srgb,var(--c) 38%,transparent);box-shadow:0 14px 34px -16px rgba(0,0,0,.7);transition:transform .25s,box-shadow .25s}
+.st:hover .card{transform:translateY(-3px);box-shadow:0 20px 40px -16px rgba(0,0,0,.8)}
 .when{margin:0 0 6px;font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
 .card h3{font:400 22px/1.05 var(--display);margin:0 0 7px;text-wrap:balance}
 .card p{margin:0;font-size:13px;line-height:1.5;color:var(--ink-2)}
 .stem{position:absolute;left:50%;width:2px;margin-left:-1px;background:var(--c);opacity:.75}
-.stem::after{content:"";position:absolute;left:50%;width:10px;height:10px;transform:translateX(-50%);border-radius:50%;background:#fff;border:2px solid var(--c)}
+.stem::after{content:"";position:absolute;left:50%;width:10px;height:10px;transform:translateX(-50%);border-radius:50%;background:var(--paper);border:2px solid var(--c)}
 .up .stem{top:100%;height:38px}
 .up .stem::after{bottom:-5px}
 .down .stem{bottom:100%;height:52px}
@@ -132,10 +134,10 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
 .crow{display:grid;grid-template-columns:150px calc(var(--cw) * 20);gap:16px;align-items:center}
 .crow .nm{font-size:13px;font-weight:600}
 .ctrack{position:relative;height:30px}
-.cseg{position:absolute;top:0;height:30px;left:calc(var(--a) * var(--cw));width:calc((var(--b) - var(--a)) * var(--cw) - 3px);border-radius:15px;background:var(--c);color:#fff;display:flex;align-items:center;padding:0 12px;font:500 9.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.cseg{position:absolute;top:0;height:30px;left:calc(var(--a) * var(--cw));width:calc((var(--b) - var(--a)) * var(--cw) - 3px);border-radius:15px;background:var(--c);color:var(--on-c);display:flex;align-items:center;padding:0 12px;font:500 9.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
 .cseg.open{-webkit-mask-image:linear-gradient(90deg,#000 62%,transparent);mask-image:linear-gradient(90deg,#000 62%,transparent)}
 .axis{margin-top:2px}
-.axis .ctrack{height:18px;border-top:1.5px solid rgba(23,32,43,.35)}
+.axis .ctrack{height:18px;border-top:1.5px solid rgba(255,255,255,.3)}
 .axis span{position:absolute;top:4px;left:calc(var(--t) * var(--cw));transform:translateX(-50%);font:400 11px var(--mono);color:var(--ink-2)}
 .mk{position:absolute;top:8px;bottom:14px;left:calc(166px + var(--cw) * 12);border-left:1.5px dashed var(--ink);pointer-events:none}
 .mk b{position:absolute;top:-4px;left:8px;font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
@@ -178,10 +180,10 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
         <svg width="34" height="12" viewBox="0 0 34 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h31M27 1l5 5-5 5"/></svg>
       </div>
       <svg class="fork" viewBox="0 0 420 320" aria-hidden="true">
-        <path pathLength="1" d="M10 160 C120 160 160 60 410 60" stroke="#3a4de0" style="animation-delay:.3s"/>
-        <path pathLength="1" d="M10 160 C140 175 260 145 410 160" stroke="#067a6d" style="animation-delay:.5s"/>
-        <path pathLength="1" d="M10 160 C120 160 160 260 410 260" stroke="#c4304b" style="animation-delay:.7s"/>
-        <circle cx="10" cy="160" r="8" fill="#17202b"/>
+        <path pathLength="1" d="M10 160 C120 160 160 60 410 60" stroke="#7c8cff" style="animation-delay:.3s"/>
+        <path pathLength="1" d="M10 160 C140 175 260 145 410 160" stroke="#2fd4be" style="animation-delay:.5s"/>
+        <path pathLength="1" d="M10 160 C120 160 160 260 410 260" stroke="#ff6f8a" style="animation-delay:.7s"/>
+        <circle cx="10" cy="160" r="8" fill="#eef0f6"/>
         <text x="410" y="42" text-anchor="end">CONSULTING / PM</text>
         <text x="410" y="142" text-anchor="end">BIOMEDICAL ENG.</text>
         <text x="410" y="288" text-anchor="end">MEDICINE</text>
@@ -200,7 +202,7 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
 
   var DATA = [
     {
-      n: '01', short: 'Consulting & PM', name: 'Healthcare consulting & PM', color: '#3a4de0',
+      n: '01', short: 'Consulting & PM', name: 'Healthcare consulting & PM', color: '#7c8cff',
       summary: 'Solve problems for hospitals, payers and life-science companies, or build the products they use. Quick to a first paycheck and flexible about where you go next.',
       stats: [['Paid from', 'Year 4'], ['Starting degree', 'Any major: bio, policy, business'], ['Common detour', 'MBA, MHA or MPH']],
       at12: 'Manager or senior PM, about eight years into a full salary.',
@@ -224,7 +226,7 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
       ]
     },
     {
-      n: '02', short: 'Biomedical eng.', name: 'Biomedical engineering', color: '#067a6d',
+      n: '02', short: 'Biomedical eng.', name: 'Biomedical engineering', color: '#2fd4be',
       summary: 'Design and test the devices, diagnostics and software clinicians rely on, from the lab bench through FDA clearance. Hands-on, with a clear graduate-school fork.',
       stats: [['Paid from', 'Year 4'], ['Starting degree', 'BS in biomedical engineering'], ['Common detour', 'MS or PhD, years 4–9']],
       at12: 'Senior engineer with about eight years in industry, or a new PhD a few years into research roles.',
@@ -248,7 +250,7 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
       ]
     },
     {
-      n: '03', short: 'Doctor', name: 'Becoming a doctor', color: '#c4304b',
+      n: '03', short: 'Doctor', name: 'Becoming a doctor', color: '#ff6f8a',
       summary: 'Care for patients directly. The longest road of the three, with the most training before a full salary and the deepest clinical responsibility.',
       stats: [['Paid from', 'Year 8, at resident pay'], ['Full salary from', 'Year 11, as an attending'], ['Starting degree', 'Any major plus pre-med courses']],
       at12: 'One year into attending pay, after three years of resident salary.',
