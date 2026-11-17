@@ -99,6 +99,9 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
 .stats{margin:0;display:grid;gap:12px;padding-top:18px;border-top:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
 .stats dt{font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
 .stats dd{margin:0;font-size:14px;font-weight:500}
+.more{display:inline-flex;align-items:center;gap:8px;margin-top:22px;padding:10px 16px;border-radius:99px;border:1.5px solid var(--c);color:var(--c);text-decoration:none;font:500 13px var(--body);transition:background .2s,color .2s}
+.more:hover{background:var(--c);color:var(--on-c)}
+.more.sm{margin-top:10px;padding:6px 12px;font-size:12px}
 .gl{position:absolute;top:84px;bottom:76px;left:calc(var(--intro) + var(--t) * var(--yw));border-left:1px dashed rgba(255,255,255,.07)}
 .ruler{position:absolute;left:var(--intro);width:calc(var(--yw) * 20);bottom:62px;border-top:1.5px solid rgba(255,255,255,.3)}
 .ruler-cap{position:absolute;right:calc(100% + 14px);top:-8px;font:500 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
@@ -202,7 +205,7 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
 
   var DATA = [
     {
-      n: '01', short: 'Consulting & PM', name: 'Healthcare consulting & PM', color: '#7c8cff',
+      n: '01', page: 'consulting.html', short: 'Consulting & PM', name: 'Healthcare consulting & PM', color: '#7c8cff',
       summary: 'Solve problems for hospitals, payers and life-science companies, or build the products they use. Quick to a first paycheck and flexible about where you go next.',
       stats: [['Paid from', 'Year 4'], ['Starting degree', 'Any major: bio, policy, business'], ['Common detour', 'MBA, MHA or MPH']],
       at12: 'Manager or senior PM, about eight years into a full salary.',
@@ -226,7 +229,7 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
       ]
     },
     {
-      n: '02', short: 'Biomedical eng.', name: 'Biomedical engineering', color: '#2fd4be',
+      n: '02', page: 'biomedical.html', short: 'Biomedical eng.', name: 'Biomedical engineering', color: '#2fd4be',
       summary: 'Design and test the devices, diagnostics and software clinicians rely on, from the lab bench through FDA clearance. Hands-on, with a clear graduate-school fork.',
       stats: [['Paid from', 'Year 4'], ['Starting degree', 'BS in biomedical engineering'], ['Common detour', 'MS or PhD, years 4–9']],
       at12: 'Senior engineer with about eight years in industry, or a new PhD a few years into research roles.',
@@ -250,7 +253,7 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
       ]
     },
     {
-      n: '03', short: 'Doctor', name: 'Becoming a doctor', color: '#ff6f8a',
+      n: '03', page: 'doctor.html', short: 'Doctor', name: 'Becoming a doctor', color: '#ff6f8a',
       summary: 'Care for patients directly. The longest road of the three, with the most training before a full salary and the deepest clinical responsibility.',
       stats: [['Paid from', 'Year 8, at resident pay'], ['Full salary from', 'Year 11, as an attending'], ['Starting degree', 'Any major plus pre-med courses']],
       at12: 'One year into attending pay, after three years of resident salary.',
@@ -294,7 +297,8 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
     sec.setAttribute('aria-label', d.name);
     var h = '<div class="origin"></div>';
     h += '<div class="head"><div class="num">Path ' + d.n + '</div><h2>' + d.name + '</h2><p>' + d.summary + '</p><dl class="stats">' +
-      d.stats.map(function (s) { return '<div><dt>' + s[0] + '</dt><dd>' + s[1] + '</dd></div>'; }).join('') + '</dl></div>';
+      d.stats.map(function (s) { return '<div><dt>' + s[0] + '</dt><dd>' + s[1] + '</dd></div>'; }).join('') + '</dl>' +
+      '<a class="more" href="' + d.page + '">Explore this path in detail <span aria-hidden="true">→</span></a></div>';
     for (var t = 0; t <= YEARS; t++) h += '<i class="gl" style="--t:' + t + '"></i>';
     h += '<div class="ruler"><span class="ruler-cap">Years since day one</span>';
     for (var k = 0; k <= YEARS; k++) h += '<span class="tk' + (k === 4 ? ' grad' : '') + '" style="--t:' + k + '">' + k + '</span>';
@@ -324,7 +328,7 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
   }).join('');
   var axis = '<div class="crow axis"><div></div><div class="ctrack">' + [0, 4, 8, 12, 16, 20].map(function (t) { return '<span style="--t:' + t + '">' + t + '</span>'; }).join('') + '</div></div>';
   var notes = DATA.map(function (d) {
-    return '<div class="note" style="--c:' + d.color + '"><strong>' + d.short + '</strong><span>At year 12: ' + d.at12 + '</span></div>';
+    return '<div class="note" style="--c:' + d.color + '"><strong>' + d.short + '</strong><span>At year 12: ' + d.at12 + '</span><a class="more sm" href="' + d.page + '">In detail <span aria-hidden="true">→</span></a></div>';
   }).join('');
   cmp.innerHTML = '<h2>Side by side</h2>' +
     '<p class="sub">Same starting line, same scale. The dashed line marks year 12, where the paths have spread furthest apart.</p>' +
@@ -514,7 +518,7 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
   var drag = null;
   scroller.addEventListener('pointerdown', function (e) {
     halt(); target = null;
-    if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('button')) return;
+    if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('button,a')) return;
     drag = { x: e.clientX, s: scroller.scrollLeft, moved: false };
   });
   window.addEventListener('pointermove', function (e) {
@@ -527,7 +531,9 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
       scroller.scrollLeft = v;
     }
   });
-  function endDrag() { drag = null; scroller.classList.remove('dragging'); }
+  var suppress = false;
+  function endDrag() { if (drag && drag.moved) { suppress = true; setTimeout(function () { suppress = false; }, 0); } drag = null; scroller.classList.remove('dragging'); }
+  scroller.addEventListener('click', function (e) { if (suppress) { e.preventDefault(); e.stopPropagation(); } }, true);
   window.addEventListener('pointerup', endDrag);
   window.addEventListener('pointercancel', endDrag);
   scroller.addEventListener('keydown', halt);

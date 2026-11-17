@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biomedical engineering in detail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one horizontal track for a single path. An intro panel, one panel per stage with four
+   blocks (day to day, what you need, pros, cons), an optional detour, then links to the other paths. */
+:root{
+  --ink:#eef0f6;
+  --ink-2:#a3adc2;
+  --paper:#0b0f1a;
+  --on-c:#0b0f1a;
+  --line:rgba(255,255,255,.12);
+  --c:#2fd4be;
+  --good:#6ee7a8;
+  --warn:#ffb86b;
+  --display:'Instrument Serif',Georgia,'Times New Roman',serif;
+  --body:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);color-scheme:dark;-webkit-font-smoothing:antialiased}
+button,a{font-family:inherit;touch-action:manipulation}
+button:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.bg{position:fixed;inset:0;background:linear-gradient(120deg,#08201f,#0a1719 60%,#09191b)}
+.blob{position:fixed;border-radius:50%;opacity:.3;pointer-events:none}
+.b1{width:760px;height:760px;left:-6%;top:-10%;background:radial-gradient(circle,var(--c) 0%,transparent 66%)}
+.b2{width:640px;height:640px;right:-8%;bottom:-18%;background:radial-gradient(circle,var(--c) 0%,transparent 66%);opacity:.18}
+
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:30;background:rgba(255,255,255,.08)}
+.progress i{display:block;height:100%;width:0;background:var(--c)}
+.bar{position:fixed;top:3px;left:0;right:0;height:61px;display:flex;align-items:center;gap:16px;padding:0 20px;z-index:20;pointer-events:none}
+.bar>*{pointer-events:auto}
+.back{flex:none;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);text-decoration:none;font:500 12.5px var(--body);white-space:nowrap;transition:background .2s}
+.back:hover{background:rgba(255,255,255,.13)}
+nav{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:none;font:500 12.5px var(--body);padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);cursor:pointer;white-space:nowrap;transition:background .25s,color .25s}
+nav button:hover{background:rgba(255,255,255,.13)}
+nav button[aria-current="true"]{background:var(--c);border-color:var(--c);color:var(--on-c)}
+.ctrl{display:flex;gap:6px}
+.ctrl button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:background .2s}
+.ctrl button:hover{background:rgba(255,255,255,.16)}
+
+#scroller{position:fixed;inset:0;overflow:auto;scrollbar-width:none;cursor:grab;outline:none}
+#scroller::-webkit-scrollbar{display:none}
+#scroller.dragging{cursor:grabbing;user-select:none}
+#scroller:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
+.track{display:flex;height:max(100%,640px);width:max-content;padding:0 max(24px,4vw)}
+.panel{position:relative;flex:none;height:100%;padding:84px 12px 88px}
+.panel.intro{width:min(92vw,600px)}
+.panel.stage{width:min(92vw,920px)}
+.panel.last{width:min(92vw,620px)}
+.pbody{height:100%;overflow:auto;scrollbar-width:thin;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:4px}
+
+/* intro */
+.eyebrow{font:500 12px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--c)}
+.intro h1{font:400 clamp(46px,6.4vw,84px)/.94 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+.intro .sum{margin:0;max-width:44ch;font-size:16px;line-height:1.55;color:var(--ink-2)}
+.toc{display:grid;gap:8px;margin:6px 0 0;padding:0;list-style:none}
+.toc button{width:100%;display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:10px;text-align:left;padding:8px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);font:500 14px var(--body);cursor:pointer;transition:background .2s,border-color .2s}
+.toc button:hover{background:rgba(255,255,255,.1);border-color:color-mix(in srgb,var(--c) 55%,transparent)}
+.toc .no{font:500 11px var(--mono);color:var(--c);letter-spacing:.1em}
+.toc .yr{font:400 11px var(--mono);color:var(--ink-2);letter-spacing:.06em;white-space:nowrap}
+.cue{display:flex;align-items:center;gap:10px;font:500 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.cue svg{animation:nudge 1.6s ease-in-out infinite}
+
+/* stage panels */
+.shead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.shead .left{display:flex;align-items:flex-end;gap:16px}
+.shead .big{font:400 64px/.8 var(--display);color:var(--c)}
+.shead h2{margin:0;font:400 clamp(32px,3.6vw,44px)/1 var(--display);letter-spacing:-.01em;text-wrap:balance}
+.pill{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--on-c);background:var(--c);padding:6px 12px;border-radius:99px;white-space:nowrap}
+.pill.opt{background:transparent;color:var(--c);border:1.5px dashed var(--c)}
+.lede{margin:0;font-size:16px;line-height:1.5;color:var(--ink-2);max-width:60ch}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.blk{padding:16px 18px 18px;border-radius:14px;background:rgba(18,24,40,.84);border:1px solid color-mix(in srgb,var(--c) 30%,transparent);box-shadow:0 14px 34px -18px rgba(0,0,0,.7)}
+.blk h3{margin:0 0 10px;font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+.blk.pro h3{color:var(--good)}
+.blk.con h3{color:var(--warn)}
+.blk p{margin:0;font-size:14.5px;line-height:1.6;color:var(--ink)}
+.blk ul{margin:0;padding:0;list-style:none;display:grid;gap:9px}
+.blk li{position:relative;padding-left:20px;font-size:14px;line-height:1.5;color:var(--ink)}
+.blk li::before{content:"";position:absolute;left:2px;top:.62em;width:7px;height:7px;border-radius:50%;background:var(--c)}
+.blk.pro li::before{background:var(--good)}
+.blk.con li::before{background:var(--warn)}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+
+/* last panel */
+.others{display:grid;gap:10px}
+.others a{display:grid;gap:3px;padding:14px 16px;border-radius:14px;border:1px solid color-mix(in srgb,var(--oc) 40%,transparent);background:rgba(18,24,40,.84);color:var(--ink);text-decoration:none;transition:transform .2s,background .2s}
+.others a:hover{transform:translateY(-2px);background:rgba(30,38,60,.9)}
+.others a span{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--oc)}
+.others a b{font:400 24px/1.05 var(--display)}
+.home{display:inline-flex;align-self:flex-start;padding:10px 18px;border-radius:99px;background:var(--ink);color:var(--paper);text-decoration:none;font:500 13px var(--body)}
+.home:hover{background:#fff}
+.last h2{margin:0;font:400 clamp(34px,4vw,48px)/1 var(--display)}
+
+/* bottom stage rail */
+.rail{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:15;width:min(760px,86vw);display:grid;gap:5px}
+.rail .segs{display:flex;gap:3px;height:22px}
+.rail .segs button{flex:var(--w) 1 0;min-width:0;border:0;border-radius:11px;background:color-mix(in srgb,var(--c) 28%,transparent);color:var(--on-c);font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;overflow:hidden;white-space:nowrap;padding:0 8px;transition:background .3s,color .3s}
+.rail .segs button[aria-current="true"]{background:var(--c)}
+.rail .segs button:not([aria-current="true"]){color:transparent}
+.rail .yrs{display:flex;justify-content:space-between;font:400 10.5px var(--mono);color:var(--ink-2)}
+
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(7px)}}
+@media (max-width:900px){.back span{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="bg"></div><i class="blob b1"></i><i class="blob b2"></i>
+<div class="progress"><i id="prog"></i></div>
+<header class="bar">
+  <a class="back" href="index.html" aria-label="Back to the timeline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>Timeline</span></a>
+  <nav id="nav" aria-label="Jump to a stage"></nav>
+  <div class="ctrl">
+    <button id="prev" type="button" aria-label="Previous stage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button id="next" type="button" aria-label="Next stage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+</header>
+<main id="scroller" tabindex="0" aria-label="Biomedical engineering in detail. Scroll sideways to move through the stages.">
+  <div class="track" id="track"></div>
+</main>
+<div class="rail" id="rail" aria-label="Stages by year"></div>
+
+<script>
+(function () {
+  var P = {"file": "biomedical.html", "n": "02", "short": "Biomedical eng.", "name": "Biomedical engineering", "color": "#2fd4be", "bg": "linear-gradient(120deg,#08201f,#0a1719 60%,#09191b)", "summary": "Design and test the devices, diagnostics and software clinicians rely on, from the lab bench through FDA clearance. Hands-on, with a clear graduate-school fork.", "stages": [{"name": "BME degree", "a": 0, "b": 4, "lede": "A broad engineering foundation applied to the body.", "day": "You split time between lectures in math, physics, biology and engineering, and labs where you build circuits, test materials and measure signals. Many students join a research lab, a design team or a co-op, which is where the job-ready skills come from.", "need": ["An ABET-accredited BS in biomedical engineering, or a related engineering degree", "Calculus through differential equations, physics, chemistry and biology", "Programming in MATLAB or Python, plus statistics", "A research, co-op or design project for your resume"], "pro": ["Flexible: keeps industry, grad school and medicine open", "Hands-on design projects and labs", "Engineering applied to health problems"], "con": ["Less depth than a pure mechanical or electrical degree", "A heavy workload across biology and engineering", "Many entry-level roles favor candidates with experience or a graduate degree"]}, {"name": "Engineer, associate to II", "a": 4, "b": 10, "lede": "Turn designs into tested, documented, approved products.", "day": "In R&D you design parts, run bench tests and write test reports. In quality or regulatory you keep design files, analyze risk and prepare submissions. In manufacturing you improve processes on the line. The day mixes CAD or MATLAB at your desk with time in the lab.", "need": ["A bachelor's degree is usually enough to start", "CAD (such as SolidWorks), statistics and technical writing", "Design controls, ISO 13485 and ISO 14971 risk management, learned on the job", "FDA pathways such as 510(k) and PMA come with experience"], "pro": ["You see a real product take shape", "A stable industry with clear skill growth", "Often steadier hours than consulting or medicine"], "con": ["Regulated development is slow and documentation-heavy", "Projects can be cancelled or restructured", "Starting pay is lower than in software"]}, {"name": "Senior / lead engineer", "a": 10, "b": 15, "lede": "Guide the technical direction of a project.", "day": "You lead the technical plan for a product, review designs, mentor junior engineers and work with clinicians, suppliers and regulators. You still get hands-on for hard problems but spend more time on decisions and coordination.", "need": ["Several years of shipped projects", "Experience with verification, validation and regulatory submissions", "Mentoring and cross-team communication", "An MS helps for some roles but is optional"], "pro": ["Technical authority and trust", "Real influence over what gets built", "Pay grows with seniority"], "con": ["Regulatory and launch deadlines add pressure", "Fewer senior seats, so growth may mean changing companies", "More meetings and less bench time"]}, {"name": "Principal / R&D manager", "a": 15, "b": 20, "lede": "Choose between deep technical expertise and managing people.", "day": "Principal engineers solve the hardest technical problems and set standards across product lines. Managers run engineering teams, hire, plan budgets and work with clinical, regulatory and marketing leaders. Both shape the product roadmap.", "need": ["A strong record and, for management, leadership experience", "Many managers hold an MS, PhD or MBA", "Patents or publications help", "Cross-functional judgment"], "pro": ["A choice of technical or management ladder", "Influence over a product line or organization", "Strong compensation"], "con": ["Less hands-on engineering", "Exposure to layoffs and company acquisitions", "Balancing technical depth with organizational politics"]}], "detour": {"name": "Master's or PhD", "yrs": "Years 4–9, optional", "lede": "Go deeper in research, or open more senior roles.", "day": "A master's is mostly coursework and a thesis or project over one to two years. A PhD is mostly lab research: designing experiments, analyzing data, writing papers and grants, teaching and meeting with your advisor.", "need": ["A strong GPA and research experience", "Letters of recommendation from professors or lab mentors", "A statement of purpose and a good match with a lab", "The GRE is optional at many programs now"], "pro": ["Opens research scientist, professor and advanced R&D roles", "PhD programs in BME are often funded with a stipend and tuition coverage", "Deep expertise and a strong network"], "con": ["Four to six years of modest stipend pay for a PhD", "The academic job market is tight", "Delays a full industry salary"]}};
+  var OTHERS = [{"name": "Healthcare consulting & PM", "file": "consulting.html", "color": "#7c8cff", "n": "01"}, {"name": "Becoming a doctor", "file": "doctor.html", "color": "#ff6f8a", "n": "03"}];
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (s) { return document.querySelector(s); };
+  var el = function (tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+  var list = function (a) { return '<ul>' + a.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; };
+  var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  var yrs = function (s) { return 'Years ' + s.a + '–' + s.b + (s.b === 20 ? '+' : ''); };
+
+  var track = $('#track'), scroller = $('#scroller');
+  var panels = [], ids = [], labels = [];
+
+  function block(cls, title, inner) { return '<article class="blk ' + cls + '"><h3>' + title + '</h3>' + inner + '</article>'; }
+  function stageHTML(no, s, yearsText, optional) {
+    return '<div class="pbody">' +
+      '<div class="shead"><div class="left"><span class="big">' + no + '</span><h2>' + s.name + '</h2></div>' +
+      '<span class="pill' + (optional ? ' opt' : '') + '">' + yearsText + '</span></div>' +
+      '<p class="lede">' + s.lede + '</p>' +
+      '<div class="grid">' +
+        block('day', 'A day in the life', '<p>' + s.day + '</p>') +
+        block('need', 'What you need', list(s.need)) +
+        block('pro', 'Pros', list(s.pro)) +
+        block('con', 'Cons', list(s.con)) +
+      '</div></div>';
+  }
+
+  /* intro */
+  var intro = el('section', 'panel intro');
+  intro.id = 'overview';
+  var toc = '<ul class="toc">' + P.stages.map(function (s, i) {
+    return '<li><button type="button" data-go="' + (i + 1) + '"><span class="no">' + pad(i + 1) + '</span><span>' + s.name + '</span><span class="yr">' + yrs(s) + '</span></button></li>';
+  }).join('') + '<li><button type="button" data-go="' + (P.stages.length + 1) + '"><span class="no">+</span><span>Detour: ' + P.detour.name + '</span><span class="yr">' + P.detour.yrs.replace(', optional', '') + '</span></button></li></ul>';
+  intro.innerHTML = '<div class="pbody"><div class="eyebrow">Path ' + P.n + ' · in detail</div><h1>' + P.name + '</h1><p class="sum">' + P.summary + '</p>' + toc +
+    '<div class="cue">Scroll <svg width="34" height="12" viewBox="0 0 34 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6h31M27 1l5 5-5 5"/></svg></div></div>';
+  track.appendChild(intro); panels.push(intro); ids.push('overview'); labels.push('Overview');
+
+  /* stages */
+  P.stages.forEach(function (s, i) {
+    var sec = el('section', 'panel stage', stageHTML(pad(i + 1), s, yrs(s), false));
+    sec.id = 'stage-' + (i + 1);
+    sec.setAttribute('aria-label', s.name);
+    track.appendChild(sec); panels.push(sec); ids.push(sec.id); labels.push(s.name);
+  });
+
+  /* detour */
+  var det = el('section', 'panel stage', stageHTML('+', P.detour, P.detour.yrs, true));
+  det.id = 'detour';
+  det.setAttribute('aria-label', 'Optional detour: ' + P.detour.name);
+  track.appendChild(det); panels.push(det); ids.push('detour'); labels.push('Detour');
+
+  /* last */
+  var last = el('section', 'panel last');
+  last.id = 'more';
+  last.innerHTML = '<div class="pbody"><div class="eyebrow">Keep exploring</div><h2>Compare the other paths</h2><div class="others">' +
+    OTHERS.map(function (o) { return '<a href="' + o.file + '" style="--oc:' + o.color + '"><span>Path ' + o.n + '</span><b>' + o.name + '</b></a>'; }).join('') +
+    '</div><a class="home" href="index.html">Back to the full timeline</a></div>';
+  track.appendChild(last); panels.push(last); ids.push('more'); labels.push('Compare');
+
+  /* nav chips */
+  var nav = $('#nav'), navBtns = [];
+  labels.forEach(function (l, i) {
+    var b = el('button', '', l); b.type = 'button';
+    b.addEventListener('click', function () { go(i); });
+    nav.appendChild(b); navBtns.push(b);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-go]'), function (b) {
+    b.addEventListener('click', function () { go(+b.getAttribute('data-go')); });
+  });
+
+  /* bottom rail: the stages drawn to the same year scale as the main timeline */
+  var rail = $('#rail'), railBtns = [];
+  var segs = el('div', 'segs');
+  P.stages.forEach(function (s, i) {
+    var b = el('button', '', s.name); b.type = 'button';
+    b.style.setProperty('--w', s.b - s.a);
+    b.setAttribute('aria-label', s.name + ', ' + yrs(s));
+    b.addEventListener('click', function () { go(i + 1); });
+    segs.appendChild(b); railBtns.push(b);
+  });
+  rail.appendChild(segs);
+  rail.appendChild(el('div', 'yrs', '<span>Year 0</span><span>4</span><span>8</span><span>12</span><span>16</span><span>20</span>'));
+
+  /* geometry, our own eased scroll, wheel, drag */
+  var offs = [];
+  function measure() { panels.forEach(function (p, i) { offs[i] = p.offsetLeft - Math.max(24, window.innerWidth * 0.04) + 12; if (offs[i] < 0) offs[i] = 0; }); }
+  var anim = 0;
+  function maxScroll() { return Math.max(0, scroller.scrollWidth - scroller.clientWidth); }
+  function scrollToX(x, instant) {
+    cancelAnimationFrame(anim);
+    x = Math.max(0, Math.min(maxScroll(), x));
+    var from = scroller.scrollLeft, dist = x - from;
+    if (instant || reduce || Math.abs(dist) < 2) { scroller.scrollLeft = x; return; }
+    var dur = Math.min(1300, 500 + Math.abs(dist) * 0.2), t0 = null;
+    function step(now) {
+      if (t0 === null) t0 = now;
+      var p = Math.min(1, (now - t0) / dur);
+      var e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      scroller.scrollLeft = from + dist * e;
+      if (p < 1) anim = requestAnimationFrame(step);
+    }
+    anim = requestAnimationFrame(step);
+  }
+  function go(i, instant) { i = Math.max(0, Math.min(panels.length - 1, i)); scrollToX(offs[i], instant); }
+
+  var active = 0, ticking = false, prog = $('#prog');
+  function update() {
+    ticking = false;
+    var sl = scroller.scrollLeft, max = maxScroll();
+    prog.style.width = (max > 0 ? sl / max * 100 : 0) + '%';
+    var px = sl + scroller.clientWidth * 0.4, idx = 0;
+    for (var q = 0; q < panels.length; q++) { if (px >= panels[q].offsetLeft) idx = q; }
+    if (idx !== active || !navBtns[idx].hasAttribute('aria-current')) {
+      active = idx;
+      navBtns.forEach(function (b, i) { b.setAttribute('aria-current', i === idx ? 'true' : 'false'); });
+      railBtns.forEach(function (b, i) { b.setAttribute('aria-current', i + 1 === idx ? 'true' : 'false'); });
+      var cur = navBtns[idx]; if (cur && cur.scrollIntoView) { var n = $('#nav'); n.scrollLeft = cur.offsetLeft - n.clientWidth / 2 + cur.clientWidth / 2; }
+    }
+  }
+  function queue() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  scroller.addEventListener('scroll', queue, { passive: true });
+  window.addEventListener('resize', function () { measure(); queue(); });
+
+  $('#next').addEventListener('click', function () { go(active + 1); });
+  $('#prev').addEventListener('click', function () { go(active - 1); });
+
+  var target = null, wraf = 0;
+  function wstep() {
+    var cur = scroller.scrollLeft, diff = target - cur;
+    if (Math.abs(diff) < 0.6) { scroller.scrollLeft = target; target = null; wraf = 0; return; }
+    scroller.scrollLeft = cur + diff * 0.14;
+    wraf = requestAnimationFrame(wstep);
+  }
+  scroller.addEventListener('wheel', function (e) {
+    cancelAnimationFrame(anim);
+    if (e.target.closest && e.target.closest('.pbody') && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      var pb = e.target.closest('.pbody');
+      var canScroll = pb.scrollHeight > pb.clientHeight + 2;
+      if (canScroll && ((e.deltaY > 0 && pb.scrollTop + pb.clientHeight < pb.scrollHeight - 1) || (e.deltaY < 0 && pb.scrollTop > 0))) return;
+    }
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      if (target === null) target = scroller.scrollLeft;
+      target = Math.max(0, Math.min(maxScroll(), target + e.deltaY * (e.deltaMode === 1 ? 32 : 1)));
+      if (!wraf) wraf = requestAnimationFrame(wstep);
+    } else { target = null; }
+  }, { passive: false });
+
+  var drag = null, suppress = false;
+  scroller.addEventListener('pointerdown', function (e) {
+    cancelAnimationFrame(anim); target = null;
+    if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('button,a')) return;
+    drag = { x: e.clientX, s: scroller.scrollLeft, moved: false };
+  });
+  window.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var dx = e.clientX - drag.x;
+    if (!drag.moved && Math.abs(dx) > 4) { drag.moved = true; scroller.classList.add('dragging'); }
+    if (drag.moved) scroller.scrollLeft = drag.s - dx;
+  });
+  function endDrag() { if (drag && drag.moved) { suppress = true; setTimeout(function () { suppress = false; }, 0); } drag = null; scroller.classList.remove('dragging'); }
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+  scroller.addEventListener('click', function (e) { if (suppress) { e.preventDefault(); e.stopPropagation(); } }, true);
+  scroller.addEventListener('keydown', function () { cancelAnimationFrame(anim); });
+  scroller.addEventListener('touchstart', function () { cancelAnimationFrame(anim); target = null; }, { passive: true });
+
+  measure();
+  var h = (location.hash || '').replace('#', ''), hi = ids.indexOf(h);
+  if (hi > 0) go(hi, true);
+  update();
+})();
+</script>
+</body>
+</html>
