@@ -359,19 +359,41 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
   var active = 0, ticking = false;
 
   /* cached geometry, so scrolling never forces layout */
-  var offs = [], origins = [];
+  /* tail copies of the intro and first path let the loop wrap with no visible jump */
+  var cloneA = hero.cloneNode(true), cloneB = scenes[1].cloneNode(true);
+  [cloneA, cloneB].forEach(function (c) {
+    c.removeAttribute('id');
+    c.setAttribute('aria-hidden', 'true');
+    var lg = c.querySelector('#legend'); if (lg) lg.removeAttribute('id');
+    Array.prototype.forEach.call(c.querySelectorAll('button'), function (b) { b.tabIndex = -1; });
+    track.appendChild(c);
+  });
+  Array.prototype.forEach.call(cloneA.querySelectorAll('.legend button'), function (b, i) {
+    b.addEventListener('click', function () { go(i + 1); });
+  });
+
+  var offs = [], origins = [], total = 0;
   function measure() {
     track.style.width = '';
-    var total = 0;
+    total = 0;
     scenes.forEach(function (s, i) {
       offs[i] = s.offsetLeft;
       var o = s.querySelector('.origin');
       origins[i] = o ? o.offsetLeft : 0;
       total += s.offsetWidth;
     });
-    track.style.width = total + 'px';
+    track.style.width = (total + cloneA.offsetWidth + cloneB.offsetWidth) + 'px';
   }
   measure();
+
+  /* past the end of the real content we are looking at the copies, which match the start exactly */
+  function wrapForward() {
+    if (total && scroller.scrollLeft > total) {
+      scroller.scrollLeft -= total;
+      if (target !== null) target -= total;
+      if (drag) drag.s -= total;
+    }
+  }
 
   /* our own eased scroll, so the buttons do not depend on native smooth scrolling */
   var anim = 0;
@@ -392,16 +414,15 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
     anim = requestAnimationFrame(step);
   }
   function go(i) {
-    i = Math.max(0, Math.min(scenes.length - 1, i));
-    scrollToX(offs[i]);
+    if (i < 0) { if (scroller.scrollLeft < 4) scroller.scrollLeft = total; i = scenes.length - 1; }
+    scrollToX(i >= scenes.length ? total : offs[i]);
   }
 
   function update() {
     ticking = false;
     var sl = scroller.scrollLeft, vw = scroller.clientWidth;
-    var max = scroller.scrollWidth - vw;
-    prog.style.width = (max > 0 ? sl / max * 100 : 0) + '%';
-    var px = sl + vw * 0.4;
+    prog.style.width = (total > 0 ? Math.min(100, (sl % total) / total * 100) : 0) + '%';
+    var px = total > 0 ? (sl + vw * 0.4) % total : sl + vw * 0.4;
     var idx = 0;
     for (var q = 0; q < offs.length; q++) { if (px >= offs[q]) idx = q; }
     if (idx !== active) {
@@ -423,7 +444,7 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
     if (!reduce) blobs.forEach(function (b, i) { b.style.transform = 'translate3d(' + (-sl * BLOB_K[i]).toFixed(1) + 'px,0,0)'; });
   }
   function queue() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
-  scroller.addEventListener('scroll', queue, { passive: true });
+  scroller.addEventListener('scroll', function () { wrapForward(); queue(); }, { passive: true });
   window.addEventListener('resize', function () { measure(); queue(); });
 
   /* play / pause */
@@ -446,14 +467,13 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
     if (whole > 0) {
       acc -= whole;
       scroller.scrollLeft = scroller.scrollLeft + whole;
-      if (scroller.scrollLeft >= maxScroll() - 1) { stop(); return; }
+      wrapForward();
     }
     requestAnimationFrame(loop);
   }
   playBtn.addEventListener('click', function () {
     if (playing) { stop(); return; }
     cancelAnimationFrame(anim);
-    if (maxScroll() - scroller.scrollLeft < 4) scroller.scrollLeft = 0;
     playing = true;
     acc = 0;
     last = performance.now();
@@ -482,9 +502,10 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
     if (scroller.scrollHeight > scroller.clientHeight + 2) return;
     if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();
-      var max = scroller.scrollWidth - scroller.clientWidth;
       if (target === null) target = scroller.scrollLeft;
-      target = Math.max(0, Math.min(max, target + e.deltaY * (e.deltaMode === 1 ? 32 : 1)));
+      target += e.deltaY * (e.deltaMode === 1 ? 32 : 1);
+      if (target < 0) { scroller.scrollLeft += total; target += total; }
+      target = Math.min(maxScroll(), target);
       if (!wraf) wraf = requestAnimationFrame(wstep);
     } else { target = null; }
   }, { passive: false });
@@ -500,7 +521,11 @@ nav button[aria-current="true"]{background:var(--c,var(--ink));border-color:var(
     if (!drag) return;
     var dx = e.clientX - drag.x;
     if (!drag.moved && Math.abs(dx) > 4) { drag.moved = true; scroller.classList.add('dragging'); }
-    if (drag.moved) scroller.scrollLeft = drag.s - dx;
+    if (drag.moved) {
+      var v = drag.s - dx;
+      if (v < 0) { v += total; drag.s += total; }
+      scroller.scrollLeft = v;
+    }
   });
   function endDrag() { drag = null; scroller.classList.remove('dragging'); }
   window.addEventListener('pointerup', endDrag);
